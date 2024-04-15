@@ -5,8 +5,20 @@ option min_tracelength 8
 
 // AND relation between courses
 // e.g. CS17 and CS200
-sig Sequence {
+sig IntroSequence {
   courses: set Course
+}
+
+sig Pathway {
+  core: set Course
+  related: set Course
+}
+
+pred pathway_completed[pathway: Pathway] {
+  // #{courses_taken & pathway.core} >= 2 or
+  // some courses_taken & pathway.core && some courses_taken & pathway.related
+  //student has taken at least one core course
+  //and at least one course in core or related besides 
 }
 
 // OR relation between courses
@@ -17,6 +29,7 @@ sig EquivalenceClass {
 
 sig Course {
   // professor: one Professor,
+  intro_completed: bool
   prerequisites: set EquivalenceClass
 }
 
