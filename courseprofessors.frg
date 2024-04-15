@@ -8,9 +8,15 @@ sig Class {
   prerequisites: set Class
 }
 
+//reach
 // sig Professor {
 //   classes: set Class
 // }
+
+sig Transcript {
+  first: one Semester, 
+  next: pfunc Semester -> Semester
+}
 
 sig Semester {
   classes_taken: set Class,
@@ -43,6 +49,7 @@ pred preReqsMet[student: Student, class: Class] {}
 // A student can take a class if:
   // They have not already taken the class
   // They have taken all prereqs for the class
+  //will probably use preReqsMet
 pred canTake[student: Student, class: Class] {}
 
 // Take an appropriate transition from one semester to the next
