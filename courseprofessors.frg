@@ -4,15 +4,15 @@ option max_tracelength 8
 option min_tracelength 8
 
 sig Class {
-  professor: one Professor,
+  // professor: one Professor,
   prerequisites: set Class
 }
 
-sig Professor {
-  classes: set Class
-}
+// sig Professor {
+//   classes: set Class
+// }
 
-sig Student {
+sig Semester {
   classes_taken: set Class,
   grad_req: set Class
 }
@@ -25,14 +25,14 @@ fun MIN_CLASSES: one Int { 3 }
 
 // there should be no loops in class prereqs
 // There should be classes with no prereqs
-pred wellformed_rereqs {}
+pred wellformed_prereqs {}
 
-//all students should start having taken no classes
+//should start having taken no classes
 pred init {}
 
-//if the course has no prereqs return null
+//if the course has no prereqs return the class itself
 //if the course has prereqs, return the furthest back class that has no prereqs
-//can add some optimization
+//can add some optimization (reach?)
   //ex: if there are multiple courses with the same prereq, prioritize that one
 fun getHighestPrereq[student: Student, class: Class]: lone Class {}
 
@@ -44,6 +44,9 @@ pred preReqsMet[student: Student, class: Class] {}
   // They have not already taken the class
   // They have taken all prereqs for the class
 pred canTake[student: Student, class: Class] {}
+
+// Take an appropriate transition from one semester to the next
+pred semesterTransition[ s1, s2: Semester]
 
 // if the classes taken by a student matches all those in grad requirements they can:
   // take any classes that they have not already taken and that they can take
