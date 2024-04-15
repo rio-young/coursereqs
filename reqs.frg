@@ -3,9 +3,21 @@
 option max_tracelength 8
 option min_tracelength 8
 
+// AND relation between courses
+// e.g. CS17 and CS200
+sig Sequence {
+  courses: set Course
+}
+
+// OR relation between courses
+// e.g. CS300 or CS33, CS19 or (CS17 and CS200), CS22 or CS1010
+sig EquivalenceClass {
+  equiv: set Sequence
+}
+
 sig Course {
   // professor: one Professor,
-  prerequisites: set Course
+  prerequisites: set EquivalenceClass
 }
 
 //reach
