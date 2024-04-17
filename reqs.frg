@@ -3,6 +3,12 @@
 option max_tracelength 8
 option min_tracelength 8
 
+sig Course {
+  // professor: one Professor,
+  intro_completed: bool
+  prerequisites: set EquivalenceClass
+}
+
 // AND relation between courses
 // e.g. CS17 and CS200
 sig IntroSequence {
@@ -24,13 +30,7 @@ pred pathway_completed[pathway: Pathway] {
 // OR relation between courses
 // e.g. CS300 or CS33, CS19 or (CS17 and CS200), CS22 or CS1010
 sig EquivalenceClass {
-  equiv: set Sequence
-}
-
-sig Course {
-  // professor: one Professor,
-  intro_completed: bool
-  prerequisites: set EquivalenceClass
+  equiv: set Course
 }
 
 //reach
@@ -70,17 +70,36 @@ pred init {}
   //ex: if there are multiple courses with the same prereq, prioritize that one
 fun getHighestPrereq[student: Student, course: Course]: lone Course {}
 
+
+//Rio 
+//Helper method
+pred equivalenceClassReached[equivalenceClass: EquivalenceClass, semester: Semester] {
+  // all classes in equivalence class are in semester.courses_taken
+  all course: Course | {
+    course in equivalenceClass.courses =>  course in semester.courses_taken
+  }
+}
+
 //Rio
 //if the course has no prereqs or
 //all prereqs have already been taken (perhaps we can do this recursively?)
-pred preReqsMet[student: Student, course: Course] {}
+pred preReqsMet[semester: Semester, course: Course] {
+  // ASSUMING semester.courses_taken gives ALL classes previously taken not just those taken in that semester
+  //there exists one equivalence class such that all of its classes are satisfied
+  some eq: EquivalenceClass | {
+    eq in course.prerequisites and equivalenceClassReached[eq, semester]
+  }
+}
 
 //Rio
 // A student can take a course if:
   // They have not already taken the course
   // They have taken all prereqs for the course
   //will probably use preReqsMet
-pred canTake[student: Student, course: Course] {}
+pred canTake[semester: Semester, course: Course] {
+  // either course.prerequisites is empty or preReqsMet[semester, course]
+  no course.prerequisites or preReqsMet[semester, course]
+}
 
 //Michael
 // Take an appropriate transition from one semester to the next
