@@ -86,12 +86,16 @@ pred equivalenceClassReached[equivalenceClass: EquivalenceClass, semester: Semes
 pred preReqsMet[semester: Semester, course: Course] {
   // ASSUMING semester.courses_taken gives ALL classes previously taken not just those taken in that semester
   //there exists one equivalence class such that all of its classes are satisfied
-  some eq: EquivalenceClass | {
-    eq in course.prerequisites and equivalenceClassReached[eq, semester]
+  // some eq: EquivalenceClass | {
+  //   eq in course.prerequisites and equivalenceClassReached[eq, semester]
+  // }
+  all c: Course | {
+    c in course.prerequisites =>  course in semester.courses_taken
   }
 }
 
 //Rio
+//Checks if a student can take a course after the given semester
 // A student can take a course if:
   // They have not already taken the course
   // They have taken all prereqs for the course
