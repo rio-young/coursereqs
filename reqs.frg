@@ -68,7 +68,13 @@ pred init {}
 //if the course has prereqs, return the furthest back course that has no prereqs
 //can add some optimization (reach?)
   //ex: if there are multiple courses with the same prereq, prioritize that one
-fun getHighestPrereq[student: Student, course: Course]: lone Course {}
+fun getHighestPrereq[student: Student, course: Course]: lone Course {
+  -- If the course has no prereqs, return the course itself
+  some course.prerequisites => {
+    -- All the courses reachable from all the Course->Prereq relations in the model
+    Course.^((Course->Course & Course->prerequisites) & (Course->Course))
+  } else { course }
+}
 
 //Rio
 //if the course has no prereqs or
@@ -84,7 +90,19 @@ pred canTake[student: Student, course: Course] {}
 
 //Michael
 // Take an appropriate transition from one semester to the next
-pred semesterTransition[ s1, s2: Semester]
+pred semesterTransition[ s1, s2: Semester] {
+  -- GUARD
+  
+  -- ACTION
+  -- Courses taken changes
+  s1.courses_taken != s2.courses_taken
+  -- All the courses taken in s1 are stored in s2
+  s1 in s2
+
+  -- FRAME
+  -- Graduation requirements stay the same
+  s1.grad_req = s2.grad_req
+}
 
 //Seong-Heon
 // if the courses taken by a student matches all those in grad requirements they can:
