@@ -1,22 +1,33 @@
-#lang forge/temporal
+#lang forge
 
-option max_tracelength 8
-option min_tracelength 8
+// sig Course {
+//   // professor: one Professor,
+//   intro_completed: bool
+//   prerequisites: set EquivalenceClass
+// }
+
+// // AND relation between courses
+// // e.g. CS17 and CS200
+// sig IntroSequence {
+//   courses: set Course
+// }
 
 sig Course {
-  // professor: one Professor,
-  intro_completed: bool
-  prerequisites: set EquivalenceClass
+    prerequisites: set Course
 }
 
-// AND relation between courses
-// e.g. CS17 and CS200
-sig IntroSequence {
-  courses: set Course
+one sig Transcript {
+    first: one Semester,
+    next: pfunc Semester -> Semester
+}
+
+sig Semester {
+    courses_taken: set Course,
+    grad_req: set Course
 }
 
 sig Pathway {
-  core: set Course
+  core: set Course,
   related: set Course
 }
 
@@ -29,24 +40,24 @@ pred pathway_completed[pathway: Pathway] {
 
 // OR relation between courses
 // e.g. CS300 or CS33, CS19 or (CS17 and CS200), CS22 or CS1010
-sig EquivalenceClass {
-  equiv: set Course
-}
-
-//reach
-// sig Professor {
-//   courses: set Course
+// sig EquivalenceClass {
+//   equiv: set Course
 // }
 
-sig Transcript {
-  first: one Semester, 
-  next: pfunc Semester -> Semester
-}
+// //reach
+// // sig Professor {
+// //   courses: set Course
+// // }
 
-sig Semester {
-  courses_taken: set Course,
-  grad_req: set Course
-}
+// sig Transcript {
+//   first: one Semester, 
+//   next: pfunc Semester -> Semester
+// }
+
+// sig Semester {
+//   courses_taken: set Course,
+//   grad_req: set Course
+// }
 
 //maximum number of courses a student can take in each state (where a state represents a semester)
 fun MAX_CLASSES: one Int { 5 }
@@ -68,17 +79,27 @@ pred init {}
 //if the course has prereqs, return the furthest back course that has no prereqs
 //can add some optimization (reach?)
   //ex: if there are multiple courses with the same prereq, prioritize that one
+<<<<<<< Updated upstream
 fun getHighestPrereq[student: Student, course: Course]: lone Course {}
+=======
+fun getHighestPrereq[semester: Semester, course: Course]: lone Course {
+  -- If the course has no prereqs, return the course itself
+  some course.prerequisites => {
+    -- All the courses reachable from all the Course->Prereq relations in the model
+    Course.^((Course->Course & Course->prerequisites) & (Course->Course))
+  } else { course }
+}
+>>>>>>> Stashed changes
 
 
 //Rio 
 //Helper method
-pred equivalenceClassReached[equivalenceClass: EquivalenceClass, semester: Semester] {
-  // all classes in equivalence class are in semester.courses_taken
-  all course: Course | {
-    course in equivalenceClass.courses =>  course in semester.courses_taken
-  }
-}
+// pred equivalenceClassReached[equivalenceClass: EquivalenceClass, semester: Semester] {
+//   // all classes in equivalence class are in semester.courses_taken
+//   all course: Course | {
+//     course in equivalenceClass.courses =>  course in semester.courses_taken
+//   }
+// }
 
 //Rio
 //if the course has no prereqs or
@@ -90,7 +111,7 @@ pred preReqsMet[semester: Semester, course: Course] {
   //   eq in course.prerequisites and equivalenceClassReached[eq, semester]
   // }
   all c: Course | {
-    c in course.prerequisites =>  course in semester.courses_taken
+    c in course.prerequisites =>  c in semester.courses_taken
   }
 }
 
@@ -103,6 +124,7 @@ pred preReqsMet[semester: Semester, course: Course] {
 pred canTake[semester: Semester, course: Course] {
   // either course.prerequisites is empty or preReqsMet[semester, course]
   no course.prerequisites or preReqsMet[semester, course]
+  course not in semester.courses_taken
 }
 
 //Michael
