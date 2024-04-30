@@ -42,34 +42,37 @@ pred init {
 }
 
 /* Rio
- * if the course has no prereqs or all prereqs have been taken
- */
-pred preReqsMet[semester: Semester, course: Course] {
-  course.prereqs in semester.courses_taken
+* if the course has no prereqs or all prereqs have been taken
+*/
+pred prereqs_met[semester: Semester, course: Course] {
+    course.prereqs in semester.courses_taken
 }
 
 
 /* Rio
- * Checks if a student can take a course after the given semester
- * A student can take a course if:
- *   They have not already taken the course
- *   They have taken all prereqs for the course
- */
-
-pred canTake[semester: Semester, course: Course] {
+* Checks if a student can take a course after the given semester
+* A student can take a course if:
+*   They have not already taken the course
+*   They have taken all prereqs for the course
+*/
+pred can_take[semester: Semester, course: Course] {
     course not in semester.courses_taken
     -- SHJ I think no course.prereqs is already met in preResMet
-    no course.prereqs or preReqsMet[semester, course] 
+    no course.prereqs or prereqs_met[semester, course] 
 }
 
 pred delta[s1, s2: Semester] {
-  -- GUARD
-  
-  -- ACTION
-  -- Courses taken changes
-  s1.courses_taken != s2.courses_taken
-  -- All the courses taken in s1 are stored in s2
-  s1.courses_taken in s2.courses_taken
+    -- GUARD
+    
+    -- ACTION
+    -- Courses taken changes
+    s1.courses_taken != s2.courses_taken
+    -- All the courses taken in s1 are stored in s2
+    s1.courses_taken in s2.courses_taken
+
+    all new_course: s2.courses_taken - s1.courses_taken | {
+        can_take[s1, new_course]
+    }
 }
 
 pred traces {
@@ -82,7 +85,7 @@ pred traces {
     all s: Semester.next | delta[s.~next, s]
 }
 
-pred gradReqSatisfied[s: Semester] {
+pred gradreq_satisfied[s: Semester] {
     GraduationReqs.courses in s.courses_taken
 }
 
