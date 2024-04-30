@@ -12,16 +12,20 @@ pred noPreReqsMet[course: Course, semester:Semester] {
 }
 
 test suite for wellformed_prereqs {
-    // TODO: Write 1 example of a valid semispace partition
-    example valid is semispaceBehavior for {
+    
+    test expect {
+      //If there are no courses that don't have prereqs
+      noIntroCourses : { (#{course:Course | not no course} > 1) and (all c : Course | not no c.prerequisites and wellformed_prereqs)} is unsat
+      //If there exists some circular dependency for prereqs
+      courseCycle : { (some c1, c2 : Course | reachable[c1,c2,prerequisites] and reachable[c2,c1,prerequisites] and wellformed_prereqs)} is unsat
+      //If there are no courses, this is vacuously true
+      noCourses : { (#{course:Course | not no course} = 0) } is sat
+    }
+    example valid is wellformed_prereqs for {
         -- FILL ME IN
-        Root = `root
-        Memory = `cell1 + `cell2 + `root
-        HeapCell = `cell1 + `cell2
-        Semispace = `space1 + `space2
-        Semispace1 = `space1
-        Semispace2 = `space2
-        cells = `space1 -> `cell1 + `space2 -> `cell2
+        Transcript = `Transcript
+        Course = `c1 + `c2
+        prerequisites = `c2 -> `c1
 
     }
 }
