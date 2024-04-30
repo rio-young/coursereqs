@@ -4,12 +4,6 @@ open "reqs.frg"
 //// Do not edit anything above this line ////
 
 ------------------------------------------------------------------------
-pred noPreReqsMet[course: Course, semester:Semester] {
-  all c: Course | {
-    not no c.prerequisites
-    c not in semester.courses_taken
-  }
-}
 
 test suite for wellformed_prereqs {
     
@@ -28,6 +22,21 @@ test suite for wellformed_prereqs {
         prerequisites = `c2 -> `c1
 
     }
+
+    example invalid is not wellformed_prereqs for {
+        -- FILL ME IN
+        Transcript = `Transcript
+        Course = `c1 + `c2 + `c3
+        prerequisites = `c2 -> `c1 + `c1 -> `c3 + `c3 -> `c2
+
+    }
+}
+
+pred noPreReqsMet[course: Course, semester:Semester] {
+  all c: Course | {
+    not no c.prerequisites
+    c not in semester.courses_taken
+  }
 }
 
 test suite for preReqsMet {
