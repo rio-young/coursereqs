@@ -1,83 +1,51 @@
 #lang forge
 
-// sig Course {
-//   // professor: one Professor,
-//   intro_completed: bool
-//   prerequisites: set EquivalenceClass
-// }
-
-// // AND relation between courses
-// // e.g. CS17 and CS200
-// sig IntroSequence {
-//   courses: set Course
-// }
-
 sig Course {
     prerequisites: set Course
 }
 
 one sig Transcript {
-    first: one Semester,
-    next: pfunc Semester -> Semester
+    first: one Semester
+}
+
+one sig GraduationReqs {
+    courses: set Course
 }
 
 sig Semester {
     courses_taken: set Course,
-    grad_req: set Course
+    next: lone Semester
 }
 
-sig Pathway {
-  core: set Course,
-  related: set Course
+pred wellformed_prereqs {
+    -- no circular prereqs
+    no c: Course | c in c.^prerequisites
+    some c: Course | no c.prerequisites
 }
 
-pred pathway_completed[pathway: Pathway] {
-  // #{courses_taken & pathway.core} >= 2 or
-  // some courses_taken & pathway.core && some courses_taken & pathway.related
-  //student has taken at least one core course
-  //and at least one course in core or related besides 
+pred wellformed_gradreqs {
+    some GraduationReqs.courses
 }
 
-// OR relation between courses
-// e.g. CS300 or CS33, CS19 or (CS17 and CS200), CS22 or CS1010
-// sig EquivalenceClass {
-//   equiv: set Course
-// }
+pred wellformed_transcript {
+    Transcript.first = Semester - Semester.next
+}
 
-// //reach
-// // sig Professor {
-// //   courses: set Course
-// // }
+pred wellformed {
+    wellformed_gradreqs
+    wellformed_prereqs
+    wellformed_transcript
+}
 
-// sig Transcript {
-//   first: one Semester, 
-//   next: pfunc Semester -> Semester
-// }
-
-// sig Semester {
-//   courses_taken: set Course,
-//   grad_req: set Course
-// }
+pred init {
+    no Transcript.first.courses_taken
+}
 
 //maximum number of courses a student can take in each state (where a state represents a semester)
 fun MAX_CLASSES: one Int { 5 }
 
 //minimum number of courses a student can take in each state (where a state represents a semester)
 fun MIN_CLASSES: one Int { 3 }
-
-//Seong-Heon
-// there should be no loops in course prereqs
-// There should be courses with no prereqs
-pred wellformed_prereqs {
-    no c: Course | c in c.^field
-    some c: Course | no c.specificPrereqs
-}
-
-//Seong-Heon
-//should start having taken no coursees
-pred init {
-    no Transcript.first.courses_taken
-}
 
 //Michael
 //if the course has no prereqs return the course itself
@@ -92,25 +60,12 @@ fun getHighestPrereq[semester: Semester, course: Course]: lone Course {
   } else { course }
 }
 
-
-//Rio 
-//Helper method
-// pred equivalenceClassReached[equivalenceClass: EquivalenceClass, semester: Semester] {
-//   // all classes in equivalence class are in semester.courses_taken
-//   all course: Course | {
-//     course in equivalenceClass.courses =>  course in semester.courses_taken
-//   }
-// }
-
 //Rio
 //if the course has no prereqs or
 //all prereqs have already been taken (perhaps we can do this recursively?)
 pred preReqsMet[semester: Semester, course: Course] {
   // ASSUMING semester.courses_taken gives ALL classes previously taken not just those taken in that semester
-  //there exists one equivalence class such that all of its classes are satisfied
-  // some eq: EquivalenceClass | {
-  //   eq in course.prerequisites and equivalenceClassReached[eq, semester]
-  // }
+
   all c: Course | {
     c in course.prerequisites =>  c in semester.courses_taken
   }
@@ -123,7 +78,6 @@ pred preReqsMet[semester: Semester, course: Course] {
   // They have taken all prereqs for the course
   //will probably use preReqsMet
 pred canTake[semester: Semester, course: Course] {
-  // either course.prerequisites is empty or preReqsMet[semester, course]
   no course.prerequisites or preReqsMet[semester, course]
   course not in semester.courses_taken
 }
@@ -131,37 +85,31 @@ pred canTake[semester: Semester, course: Course] {
 //Michael
 // Take an appropriate transition from one semester to the next
 pred delta[s1, s2: Semester] {
-  -- GUARD
-  
-  -- ACTION
-  -- Courses taken changes
-  s1.courses_taken != s2.courses_taken
-  -- All the courses taken in s1 are stored in s2
-  s1 in s2
+    -- GUARD
+    
+    -- ACTION
+    -- Courses taken changes
+    s1.courses_taken != s2.courses_taken
+    -- All the courses taken in s1 are stored in s2
+    s1.courses_taken in s2.courses_taken
 
-  -- FRAME
-  -- Graduation requirements stay the same
-  s1.grad_req = s2.grad_req
-}
-
-//Seong-Heon
-// if the courses taken by a student matches all those in grad requirements they can:
-  // take any courses that they have not already taken and that they can take
-pred traces {
-    init
-    -- The original comment said that students should take any course they 
-    -- have not already taken if they completed their grad reqs. This is 
-    -- technically true, but it's also true for all semesters. Maybe I
-    -- misunderstood something  
-    all s: Transcript.next.Semester | {
-        delta[s, Transcript.next[s]]
+    all new_course: s2.courses_taken - s1.courses_taken | {
+        canTake[s1, new_course]
     }
 }
 
-//Seong-Heon
-//checks if a student has taken all required courses
-pred gradReqSatisfied[s: Semester] {
-    s.grad_req in s.courses_taken
+pred traces {
+    init
+    wellformed
+    -- The original comment said that students should take any course they 
+    -- have not already taken if they completed their grad reqs. This is 
+    -- technically true, but it's also true for all semesters. Maybe I
+    -- misunderstood something
+    all s: Semester.next | delta[s.~next, s]
 }
 
-run {} for 4 Semester for {next is linear}
+pred gradreq_satisfied[s: Semester] {
+    GraduationReqs.courses in s.courses_taken
+}
+
+run {traces} for 4 Semester for {next is linear}

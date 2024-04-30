@@ -11,6 +11,21 @@ pred noPreReqsMet[course: Course, semester:Semester] {
   }
 }
 
+test suite for wellformed_prereqs {
+    // TODO: Write 1 example of a valid semispace partition
+    example valid is semispaceBehavior for {
+        -- FILL ME IN
+        Root = `root
+        Memory = `cell1 + `cell2 + `root
+        HeapCell = `cell1 + `cell2
+        Semispace = `space1 + `space2
+        Semispace1 = `space1
+        Semispace2 = `space2
+        cells = `space1 -> `cell1 + `space2 -> `cell2
+
+    }
+}
+
 test suite for preReqsMet {
   test expect {
       //If the course has no prereqs, then preReqsMet is vacuously true
