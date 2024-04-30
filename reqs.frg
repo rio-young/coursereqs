@@ -68,20 +68,22 @@ fun MIN_CLASSES: one Int { 3 }
 //Seong-Heon
 // there should be no loops in course prereqs
 // There should be courses with no prereqs
-pred wellformed_prereqs {}
+pred wellformed_prereqs {
+    no c: Course | c in c.^field
+    some c: Course | no c.specificPrereqs
+}
 
 //Seong-Heon
 //should start having taken no coursees
-pred init {}
+pred init {
+    no Transcript.first.courses_taken
+}
 
 //Michael
 //if the course has no prereqs return the course itself
 //if the course has prereqs, return the furthest back course that has no prereqs
 //can add some optimization (reach?)
   //ex: if there are multiple courses with the same prereq, prioritize that one
-<<<<<<< Updated upstream
-fun getHighestPrereq[student: Student, course: Course]: lone Course {}
-=======
 fun getHighestPrereq[semester: Semester, course: Course]: lone Course {
   -- If the course has no prereqs, return the course itself
   some course.prerequisites => {
@@ -89,7 +91,6 @@ fun getHighestPrereq[semester: Semester, course: Course]: lone Course {
     Course.^((Course->Course & Course->prerequisites) & (Course->Course))
   } else { course }
 }
->>>>>>> Stashed changes
 
 
 //Rio 
@@ -129,13 +130,38 @@ pred canTake[semester: Semester, course: Course] {
 
 //Michael
 // Take an appropriate transition from one semester to the next
-pred semesterTransition[ s1, s2: Semester]
+pred delta[s1, s2: Semester] {
+  -- GUARD
+  
+  -- ACTION
+  -- Courses taken changes
+  s1.courses_taken != s2.courses_taken
+  -- All the courses taken in s1 are stored in s2
+  s1 in s2
+
+  -- FRAME
+  -- Graduation requirements stay the same
+  s1.grad_req = s2.grad_req
+}
 
 //Seong-Heon
 // if the courses taken by a student matches all those in grad requirements they can:
   // take any courses that they have not already taken and that they can take
-pred traces {}
+pred traces {
+    init
+    -- The original comment said that students should take any course they 
+    -- have not already taken if they completed their grad reqs. This is 
+    -- technically true, but it's also true for all semesters. Maybe I
+    -- misunderstood something  
+    all s: Transcript.next.Semester | {
+        delta[s, Transcript.next[s]]
+    }
+}
 
 //Seong-Heon
 //checks if a student has taken all required courses
-pred graduationRequirementReached {}
+pred gradReqSatisfied[s: Semester] {
+    s.grad_req in s.courses_taken
+}
+
+run {} for 4 Semester for {next is linear}
