@@ -8,8 +8,9 @@ We represent course prereqs with sets of equivalent courses which themselves con
 
 As we move from semester to semester, we make sure that the courses we have taken remain on our transcript and that any new classes added to the transcript are ones that we have met the requirements for by having taking the prerequisite courses.
 
+# # Stakeholders:
+
+This model is primarily intended for students, though some other stakeholders could include Brown administration and faculty.
+
 Who is model intended for
-
-Stakeholders:
-
 What did and didn't work out
