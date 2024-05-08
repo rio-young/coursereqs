@@ -45,7 +45,7 @@ for (let s = 0; s < numSems; s++) {
     } else {
       for (let r = 1; r < 6; r++) {
         const courseTbox = new TextBox({
-          text: courseList[r],
+          text: courseList[r - 1],
           coords: { x: 0, y: 0 },
           color: "black",
           fontsize: 12,
@@ -58,7 +58,7 @@ for (let s = 0; s < numSems; s++) {
 
 function listCourses(semesterAtom) {
   const courses = semesterAtom
-    .join(courses_taken)
+    .join(taking)
     .tuples()
     .map((tuple) => {
       return tuple.atoms();
