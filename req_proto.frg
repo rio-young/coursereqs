@@ -65,7 +65,7 @@ pred wellformed_equivalent_courses {
     }
 }
 
-pred wellformed_prerequisites {
+pred wellformed_prereqs {
     no c: Course | reachable[c, c, prerequisites, eq_courses]
     some c: Course | no c.prerequisites
 }
@@ -82,7 +82,7 @@ pred wellformed {
     wellformed_introseqs
     wellformed_equivalent_courses
     wellformed_gradreqs
-    wellformed_prerequisites
+    wellformed_prereqs
     wellformed_transcript
 }
 
@@ -100,7 +100,7 @@ pred introseq_satisfied[semester: Semester] {
 /* Rio
  * if the course has no prerequisites or all prerequisites have been taken
  */
-pred prerequisites_met[semester: Semester, course: Course] {
+pred preReqsMet[semester: Semester, course: Course] {
     all courseSet: course.prerequisites | {
         some (courseSet.eq_courses & semester.courses_taken)
     }
@@ -113,8 +113,8 @@ pred prerequisites_met[semester: Semester, course: Course] {
  *   They have taken all prerequisites for the course
  *   They haven't taken the course before
  */
-pred can_take[semester: Semester, course: Course] {
-    prerequisites_met[semester, course]
+pred canTake[semester: Semester, course: Course] {
+    preReqsMet[semester, course]
     course.requires_intro = True => introseq_satisfied[semester]
     course not in semester.courses_taken
 }
@@ -134,8 +134,8 @@ pred delta[s1, s2: Semester] {
     s2.courses_taken = s1.taking + s1.courses_taken
 
     -- Verify that all new courses can be taken
-    all new_course: s1.taking | {
-        can_take[s1, new_course]
+    all new_course: s2.taking | {
+        canTake[s2, new_course]
     }
 }
 
@@ -156,7 +156,7 @@ pred traces {
 }
 
 pred gradreq_satisfied[s: Semester] {
-    GraduationReqs.requirements in s.courses_taken
+    GraduationReqs.requirements in (s.courses_taken + s.taking)
 }
 
 run {

@@ -1,6 +1,7 @@
 #lang forge
 
-open "reqs.frg"
+// open "reqs.frg"
+open "req_proto.frg"
 //// Do not edit anything above this line ////
 
 ------------------------------------------------------------------------
@@ -36,15 +37,20 @@ test suite for wellformed_prereqs {
   example valid is wellformed_prereqs for {
       Transcript = `Transcript
       Course = `c1 + `c2
-      prerequisites = `c2 -> `c1
+      EquivalentCourse = `eq1
+      `eq1.eq_courses = `c1
+      prerequisites = `c2 -> `eq1
   }
 
   example invalid is not wellformed_prereqs for {
       -- FILL ME IN
       Transcript = `Transcript
       Course = `c1 + `c2 + `c3
-      prerequisites = `c2 -> `c1 + `c1 -> `c3 + `c3 -> `c2
-
+      EquivalentCourse = `eq1 + `eq2 + `eq3
+      `eq1.eq_courses = `c1
+      `eq2.eq_courses = `c2
+      `eq3.eq_courses = `c3
+      prerequisites = `c2 -> `eq1 + `c1 -> `eq3 + `c3 -> `eq2
   }
 }
 
@@ -93,4 +99,33 @@ test suite for canTake {
                               canTake[semester, c1] )} is unsat
       takenCourse :  { (some c : Course, semester:Semester | c in semester.courses_taken and canTake[semester, c] )} is unsat
     }
+}
+
+/* TESTS ADDED ON 5/8 */
+test suite for traces {
+  test expect {
+    -- There never exists a trace such that someone takes more than 5 courses in a semester.
+    noSemestersOver5Courses: {
+      traces implies {
+        no s: Semester | #{s.taking} > 5
+      }
+    } is theorem
+
+    -- There exists a trace such that the graduation requirements are met.
+    graduationRequirementsCanBeMet: {
+      traces
+      some s: Semester | gradreq_satisfied[s]
+    } is sat
+
+    -- There never exists a trace where the same course is being taken in different semesters.
+    tookSameCourseInDifferentSemesters: {
+      traces
+      some c: Course | {
+        some disj s1, s2: Semester | {
+          c in s1.taking
+          c in s2.taking
+        }
+      }
+    } is unsat
+  }
 }
