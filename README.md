@@ -2,4 +2,8 @@
 
 Modeling courses and course requirements at Brown
 
-stakeholders:
+Who is model intended for
+
+Stakeholders:
+
+What did and didn't work out
