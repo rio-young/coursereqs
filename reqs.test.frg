@@ -42,7 +42,16 @@ test suite for wellformed_prereqs {
       prerequisites = `c2 -> `e
   }
 
-  example invalid is not wellformed_prereqs for {
+  example special_valid is wellformed_prereqs for {
+      Transcript = `Transcript
+      EquivalentCourse = `e1 + `e2
+      Course = `c1 + `c2 + `c3 + `c4
+      `e1.eq_courses = `c2 + `c3
+      `e2.eq_courses = `c1 + `c4
+      prerequisites = `c1 -> `e1 + `c2 -> `e2
+  }
+
+  example invalid_cycle is not wellformed_prereqs for {
       -- FILL ME IN
       Transcript = `Transcript
       Course = `c1 + `c2 + `c3
@@ -91,39 +100,23 @@ test suite for prerequisites_met {
     }
 }
 
-test suite for canTake {
+test suite for can_take {
   test expect {
-      //If the course has no prerequisites, then preReqsMet is vacuously true
-      noprerequisites2 : { (all c : Course, semester:Semester | no c.prerequisites and canTake[semester, c] )} is sat
+      //If the course has no prerequisites, then prerequisites_met is vacuously true
+      noprerequisites2 : { (all c : Course, semester:Semester | no c.prerequisites and can_take[semester, c] )} is sat
       //If prerequisites and courses taken are the same then the prerequisites must be met
-      allprerequisitesTaken2 : { (all c : Course, semester:Semester | (c.prerequisites = semester.courses_taken) and canTake[semester, c] )} is sat
+      allprerequisitesTaken2 : { (all c : Course, semester:Semester | (c.prerequisites = semester.courses_taken) and can_take[semester, c] )} is sat
       //If there is at least one course and none of its prerequisites have been taken, then the prerequisites have not been met
-      noPrereqMet2 : { (#{course:Course | not no course} > 1) and (all c : Course, semester:Semester | nopreReqsMet[c, semester] and canTake[semester, c] )} is unsat
-      //All prerequisites must be met for preReqsMet to be true
-      onePrereqNotMet2 : { (some disj c1, c2 : Course, semester:Semester |  
+      noPrereqMet2 : { (#{course:Course | not no course} > 1) and (all c : Course, semester:Semester | noprerequisites_met[c, semester] and can_take[semester, c] )} is unsat
+      //All prerequisites must be met for prerequisites_met to be true
+      onePrereqNotMet2 : { (some c1: Course, c2 : EquivalentCourse, semester:Semester |  
                               c2 in c1.prerequisites and 
-                              c2 not in semester.courses_taken and 
-                              canTake[semester, c1] )} is unsat
-      takenCourse :  { (some c : Course, semester:Semester | c in semester.courses_taken and canTake[semester, c] )} is unsat
+                              not oneEquivSatisfied[c2, semester] and 
+                              prerequisites_met[semester, c1] )} is unsat
+      // takenCourse :  { (some c : Course, semester:Semester | c in semester.courses_taken and can_take[semester, c] )} is unsat
     }
 }
 
-// test suite for can_take {
-//   test expect {
-//       //If the course has no prerequisites, then prerequisites_met is vacuously true
-//       noprerequisites2 : { (all c : Course, semester:Semester | no c.prerequisites and can_take[semester, c] )} is sat
-//       //If prerequisites and courses taken are the same then the prerequisites must be met
-//       allprerequisitesTaken2 : { (all c : Course, semester:Semester | (c.prerequisites = semester.courses_taken) and can_take[semester, c] )} is sat
-//       //If there is at least one course and none of its prerequisites have been taken, then the prerequisites have not been met
-//       noPrereqMet2 : { (#{course:Course | not no course} > 1) and (all c : Course, semester:Semester | noprerequisites_met[c, semester] and can_take[semester, c] )} is unsat
-//       //All prerequisites must be met for prerequisites_met to be true
-//       onePrereqNotMet2 : { (some disj c1, c2 : Course, semester:Semester |  
-//                               c2 in c1.prerequisites and 
-//                               c2 not in semester.courses_taken and 
-//                               can_take[semester, c1] )} is unsat
-//       takenCourse :  { (some c : Course, semester:Semester | c in semester.courses_taken and can_take[semester, c] )} is unsat
-//     }
-// }
 
 /* TESTS ADDED ON 5/8 */
 test suite for traces {
