@@ -96,7 +96,7 @@ pred prerequisites_met[semester: Semester, course: Course] {
 pred can_take[semester: Semester, course: Course] {
     prerequisites_met[semester, course]
     some p: Professor | {
-      course in p.courses => p.on_sabatical = False
+      course in p.courses and p.on_sabatical = False
     }
     course not in semester.courses_taken
     // course.requires_intro = True => introseq_satisfied[semester]

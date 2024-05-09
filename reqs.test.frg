@@ -136,7 +136,11 @@ test suite for can_take {
                               c2 in c1.prerequisites and 
                               not oneEquivSatisfied[c2, semester] and 
                               prerequisites_met[semester, c1] )} is unsat
-      // takenCourse :  { (some c : Course, semester:Semester | c in semester.courses_taken and can_take[semester, c] )} is unsat
+      takenCourse :  { (some c : Course, semester:Semester | c in semester.courses_taken and can_take[semester, c] )} is unsat
+      all_prof_sabatical : {
+        #Course > 0
+        wellformed_professors and 
+        (all p: Professor | all c : Course, semester:Semester | p.on_sabatical = True and can_take[semester, c])} is unsat
     }
 }
 
