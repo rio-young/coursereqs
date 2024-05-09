@@ -1,20 +1,5 @@
 #lang forge
 
-abstract sig Boolean {}
-one sig True extends Boolean {}
-one sig False extends Boolean {}
-
-/*
- * The intro sequence is unique in that unlike other courses, its requirements
- * are in disjunctive normal form:
- * (111 AND 200) OR (150 AND 200) OR (170 AND 200) OR (190)
- * Therefore, we need to special case checking for whether the intro
- * sequence is completed
- */
-sig IntroSequence {
-    courses: set Course
-}
-
 /*
  * For every other course, the requirements are in conjuntive normal form:
  * (330 OR 300) AND (LINALG)
@@ -40,25 +25,6 @@ sig Semester {
     taking: set Course,
     courses_taken: set Course,
     next: lone Semester
-}
-
-// Wellformed-ness checks
-pred wellformed_introseqs {
-    all sequence: IntroSequence | {
-        // No intro course should require that the student have taken
-        // the intro course
-        all course: sequence.courses | {
-          course.requires_intro = False
-          // no course.prerequisites
-        }
-        // At least one course in the sequence should not have any prereqs
-        some course: sequence.courses | no course.prerequisites
-    }
-
-    -- This is more of an optimization issue, but we don't want duplicates
-    no disj s1, s2: IntroSequence | {
-        s1.courses = s2.courses
-    }
 }
 
 pred wellformed_equivalent_courses {
@@ -88,24 +54,14 @@ pred wellformed_transcript {
 }
 
 pred wellformed {
-    wellformed_introseqs
     wellformed_equivalent_courses
     wellformed_gradreqs
     wellformed_prereqs
     wellformed_transcript
-    wellformed_equivalent_courses
-    wellformed_introseqs
 }
 
 pred init {
     no Transcript.first.courses_taken
-}
-
-pred introseq_satisfied[semester: Semester] {
-    some seq: IntroSequence | {
-        // seq.courses in semester.courses_taken
-        (seq.courses & semester.courses_taken) = seq.courses
-    }
 }
 
 /* Rio
@@ -125,7 +81,7 @@ pred prerequisites_met[semester: Semester, course: Course] {
  */
 pred can_take[semester: Semester, course: Course] {
     prerequisites_met[semester, course]
-    course.requires_intro = True => introseq_satisfied[semester]
+    // course.requires_intro = True => introseq_satisfied[semester]
 }
 
 pred delta[s1, s2: Semester] {
