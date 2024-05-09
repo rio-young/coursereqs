@@ -48,10 +48,10 @@ pred wellformed_introseqs {
         // the intro course
         all course: sequence.courses | {
           course.requires_intro = False
-          no course.prerequisites
+          // no course.prerequisites
         }
         // At least one course in the sequence should not have any prereqs
-        // some course: sequence.courses | no course.prerequisites
+        some course: sequence.courses | no course.prerequisites
     }
 
     -- This is more of an optimization issue, but we don't want duplicates
@@ -68,7 +68,14 @@ pred wellformed_equivalent_courses {
 }
 
 pred wellformed_prereqs {
-    no c: Course | reachable[c, c, prerequisites, eq_courses]
+    // no c: Course | reachable[c, c, prerequisites, eq_courses]
+    all c: Course | {
+      no c.prerequisites or
+      (some c2: Course| {
+        c2 in c.prerequisites.eq_courses
+        not reachable[c, c2, prerequisites, eq_courses]
+      })
+    }
     some c: Course | no c.prerequisites
 }
 
@@ -81,11 +88,11 @@ pred wellformed_transcript {
 }
 
 pred wellformed {
-    wellformed_introseqs
-    wellformed_equivalent_courses
-    wellformed_gradreqs
+    // wellformed_introseqs
+    // wellformed_equivalent_courses
+    // wellformed_gradreqs
     wellformed_prereqs
-    wellformed_transcript
+    // wellformed_transcript
 }
 
 pred init {
@@ -185,6 +192,7 @@ inst allcourses {
   `EquivalentCourse13.eq_courses = `CS1010
   `EquivalentCourse14.eq_courses = `CS0220 + `CS0200
   `EquivalentCourse15.eq_courses = `CS1330 + `CS1310 + `CS0300 + `CS0330
+  // `EquivalentCourse16.eq_courses = `CS0220
   `EquivalentCourse16.eq_courses = `CS1010 + `CS0220
   `EquivalentCourse17.eq_courses = `CS1330 + `CS0300 + `CS0330 + `CS0320 + `CS1310
   `EquivalentCourse18.eq_courses = `CS1330 + `CS0300 + `CS0330 + `CS1310 + `CS1670
@@ -240,12 +248,22 @@ inst allcourses {
 inst grad_reqs1 {
   //add some gradreqs here
   allcourses
+  GraduationReqs = `gradreqs
+  `gradreqs.requirements = `CS0150 + `CS0200 + //series a
+                           //COMPUTER ARCHITECTURE pathway
+                           `CS1952Y + `CS1440 + `CS0330 +
+                           //Intermediate Classes
+                           `CS1450 + `CS0320 +
+                           //3 1000 level classes
+                           `CS1950N + `CS1953A + `CS1870
+
 }
 
 test expect {
   grad1: {
+    traces
     some s: Semester | gradreq_satisfied[s]
   } for grad_reqs1 is sat
 }
 
-run {traces} for exactly 8 Semester, 20 Course for {next is linear}
+// run {traces} for exactly 8 Semester, 20 Course for {next is linear}

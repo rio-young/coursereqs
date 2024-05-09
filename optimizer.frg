@@ -87,3 +87,18 @@ Course = `CS0111 + `CS0500 + `CS1040 + `CS1300 + `CS1380 + `CS1430 + `CS1411 +
   `CS1951Z.prerequisites = `EquivalentCourse22
   `CS1952Q.prerequisites = `EquivalentCourse2
   `CS1952Y.prerequisites = `EquivalentCourse15
+
+
+
+  //GRAD REQS
+  `seriesA = `CS0150 + `CS0200
+  `seriesB = `CS0170 + `CS0200
+  `seriesC = `CS0190 
+  `seriesD = `CS0111 + `CS0112 + `CS0200
+
+// Seven advanced classes
+//♦︎ One complete pathway (see ScB for pathways)	
+// Requires two 1000-level courses as well as one-to-three intermediate courses
+// ♦︎ Additional intermediate courses so that a total of three are taken with at least one in each of two different intermediate-course categories (see the ScB requirements for a listing of these categories)	
+// ♦︎ One additional 1000-level course that is neither a core nor a related course for the pathways used above	
+// ♦︎ Of the remaining two courses, at least one must be at the 1000-level or higher (i.e., one may be an intermediate course not otherwise used as part of the concentration). One course may be an approved 1000-level course from another department. Unless explicitly stated in a pathway, such non-CS courses may not be used as part of pathways.
