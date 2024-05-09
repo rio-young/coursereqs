@@ -8,7 +8,6 @@ sig EquivalentCourse {
     eq_courses: set Course
 }
 sig Course {
-    requires_intro: one Boolean,
     prerequisites: set EquivalentCourse
 }
 
