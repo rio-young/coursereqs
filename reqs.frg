@@ -2,7 +2,7 @@
 abstract sig Boolean {}
 one sig True, False extends Boolean {}
 /*
- * For every other course, the requirements are in conjuntive normal form:
+ * Course requirements are in conjuntive normal form:
  * (330 OR 300) AND (LINALG)
  */
 sig EquivalentCourse {
@@ -38,20 +38,21 @@ pred wellformed_equivalent_courses {
         e1.eq_courses = e2.eq_courses 
     }
 }
+
 pred wellformed_prereqs {
     all c: Course | {
       no c.prerequisites or
-      (some c2: Course| {
-        c2 in c.prerequisites.eq_courses
+      (some c2: c.prerequisites.eq_courses | {
         not reachable[c, c2, prerequisites, eq_courses]
       })
     }
     some c: Course | no c.prerequisites
 }
 
--- CS1570-CS1010 fails this
+-- CS1570+CS1010 fails this
 pred wellformed_prereqs_with_no_cycles {
     no c: Course | reachable[c, c, prerequisites, eq_courses]
+    some c: Course | no c.prerequisites
 }
 
 pred wellformed_gradreqs {
