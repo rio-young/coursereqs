@@ -33,7 +33,6 @@ pred wellformed_equivalent_courses {
     }
 }
 pred wellformed_prereqs {
-    // no c: Course | reachable[c, c, prerequisites, eq_courses]
     all c: Course | {
       no c.prerequisites or
       (some c2: Course| {
@@ -42,6 +41,11 @@ pred wellformed_prereqs {
       })
     }
     some c: Course | no c.prerequisites
+}
+
+-- CS1570-CS1010 fails this
+pred wellformed_prereqs_with_no_cycles {
+    no c: Course | reachable[c, c, prerequisites, eq_courses]
 }
 
 pred wellformed_gradreqs {
