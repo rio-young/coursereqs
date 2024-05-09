@@ -259,11 +259,29 @@ inst grad_reqs1 {
 
 }
 
+inst grad_reqs2 {
+  //add some gradreqs here
+  allcourses
+  GraduationReqs = `gradreqs
+  `gradreqs.requirements = `CS0170 + `CS0200 + //series b
+                           //SOFTWARE PRINCIPLES pathway
+                           `CS1260 + `CS1270 + 
+                           //Intermediate Classes
+                           `CS0220 + `CS0320 + `CS0300 + 
+                           //3 1000-2000 level classes
+                           `CS1950U + `CS1570 + `CS1440
+
+}
+
 test expect {
   grad1: {
     traces
     some s: Semester | gradreq_satisfied[s]
   } for grad_reqs1 is sat
+  grad2: {
+    traces
+    some s: Semester | gradreq_satisfied[s]
+  } for grad_reqs2 is sat
 }
 
 // run {traces} for exactly 8 Semester, 20 Course for {next is linear}
