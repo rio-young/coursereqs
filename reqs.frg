@@ -1,5 +1,6 @@
 #lang forge
-
+abstract sig Boolean {}
+one sig True, False extends Boolean {}
 /*
  * For every other course, the requirements are in conjuntive normal form:
  * (330 OR 300) AND (LINALG)
@@ -8,8 +9,12 @@ sig EquivalentCourse {
     eq_courses: set Course
 }
 sig Course {
-    requires_intro: one Boolean,
     prerequisites: set EquivalentCourse
+}
+
+sig Professor {
+  courses: set Course,
+  on_sabatical: one Boolean
 }
 
 // State Tracking
@@ -53,7 +58,12 @@ pred wellformed_transcript {
     Transcript.first = Semester - Semester.next
 }
 
+pred wellformed_professors{
+  all course: Course | one p: Professor | course in p.courses
+}
+
 pred wellformed {
+    wellformed_professors
     wellformed_equivalent_courses
     wellformed_gradreqs
     wellformed_prereqs
@@ -81,6 +91,10 @@ pred prerequisites_met[semester: Semester, course: Course] {
  */
 pred can_take[semester: Semester, course: Course] {
     prerequisites_met[semester, course]
+    one p: Professor | {
+      course in p.courses => p.on_sabatical = False
+    }
+    course not in semester.courses_taken
     // course.requires_intro = True => introseq_satisfied[semester]
 }
 
@@ -98,7 +112,7 @@ pred delta[s1, s2: Semester] {
     -- Update courses taken
     s2.courses_taken = s1.taking + s1.courses_taken
 
-    all new_course: s2.courses_taken - s1.courses_taken | {
+    all new_course: s2.taking | {
         can_take[s1, new_course]
     }
 }
@@ -252,5 +266,10 @@ test expect {
     some s: Semester | gradreq_satisfied[s]
   } for grad_reqs2 is sat
 }
+
+run {
+    traces
+    GraduationReqs.requirements = Course
+} for exactly 8 Semester, 20 Course, 5 Int for {next is linear}
 
 // run {traces} for exactly 8 Semester, 20 Course for {next is linear}

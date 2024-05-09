@@ -1,7 +1,7 @@
 #lang forge
 
 // open "reqs.frg"
-open "req_proto.frg"
+open "reqs.frg"
 //// Do not edit anything above this line ////
 
 ------------------------------------------------------------------------
@@ -61,6 +61,21 @@ test suite for wellformed_prereqs {
       `e3.eq_courses = `c3
 
       prerequisites = `c2 -> `e1 + `c1 -> `e3 + `c3 -> `e2
+  }
+}
+
+test suite for wellformed_professors {
+  example professorless_course is not wellformed_professors for {
+      -- FILL ME IN
+      Transcript = `Transcript
+      Course = `c1 
+  }
+  example professor_course is wellformed_professors for {
+      -- FILL ME IN
+      Transcript = `Transcript
+      Course = `c1 
+      Professor = `p1
+      `p1.courses = `c1
   }
 }
 
