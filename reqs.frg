@@ -22,10 +22,9 @@ sig IntroSequence {
 sig EquivalentCourse {
     eq_courses: set Course
 }
-
 sig Course {
     requires_intro: one Boolean,
-    prerequisites: set Course
+    prerequisites: set EquivalentCourse
 }
 
 // State Tracking
@@ -48,9 +47,12 @@ pred wellformed_introseqs {
     all sequence: IntroSequence | {
         // No intro course should require that the student have taken
         // the intro course
-        all course: sequence.courses | course.requires_intro = False
+        all course: sequence.courses | {
+          course.requires_intro = False
+          no course.prerequisites
+        }
         // At least one course in the sequence should not have any prereqs
-        some course: sequence.courses | no course.prerequisites
+        // some course: sequence.courses | no course.prerequisites
     }
 
     -- This is more of an optimization issue, but we don't want duplicates
@@ -65,13 +67,6 @@ pred wellformed_equivalent_courses {
         e1.eq_courses = e2.eq_courses 
     }
 }
-
-// pred wellformed_prereqs {
-//     -- no circular prereqs
-//     no c: Course | c in c.^prerequisites
-//     some c: Course | no c.prerequisites
-// }
-
 pred wellformed_prereqs {
     no c: Course | reachable[c, c, prerequisites, eq_courses]
     some c: Course | no c.prerequisites
@@ -86,6 +81,8 @@ pred wellformed_transcript {
 }
 
 pred wellformed {
+    wellformed_introseqs
+    wellformed_equivalent_courses
     wellformed_gradreqs
     wellformed_prereqs
     wellformed_transcript
@@ -104,50 +101,26 @@ pred introseq_satisfied[semester: Semester] {
     }
 }
 
-//maximum number of courses a student can take in each state (where a state represents a semester)
-fun MAX_CLASSES: one Int { 5 }
-
-//minimum number of courses a student can take in each state (where a state represents a semester)
-fun MIN_CLASSES: one Int { 3 }
-
-//Michael
-//if the course has no prereqs return the course itself
-//if the course has prereqs, return the furthest back course that has no prereqs
-//can add some optimization (reach?)
-  //ex: if there are multiple courses with the same prereq, prioritize that one
-fun getHighestPrereq[semester: Semester, course: Course]: lone Course {
-  -- If the course has no prereqs, return the course itself
-  some course.prerequisites => {
-    -- All the courses reachable from all the Course->Prereq relations in the model
-    Course.^((Course->Course & Course->prerequisites) & (Course->Course))
-  } else { course }
+/* Rio
+ * if the course has no prerequisites or all prerequisites have been taken
+ */
+pred prerequisites_met[semester: Semester, course: Course] {
+    all courseSet: course.prerequisites | {
+        some (courseSet.eq_courses & semester.courses_taken)
+    }
 }
 
-//Rio
-//if the course has no prereqs or
-//all prereqs have already been taken (perhaps we can do this recursively?)
-pred preReqsMet[semester: Semester, course: Course] {
-  // ASSUMING semester.courses_taken gives ALL classes previously taken not just those taken in that semester
-
-  all c: Course | {
-    c in course.prerequisites =>  c in semester.courses_taken
-  }
+/* Rio
+ * Checks if a student can take a course after the given semester
+ * A student can take a course if:
+ *   They have taken the intro if that's needed
+ *   They have taken all prerequisites for the course
+ */
+pred can_take[semester: Semester, course: Course] {
+    prerequisites_met[semester, course]
+    course.requires_intro = True => introseq_satisfied[semester]
 }
 
-//Rio
-//Checks if a student can take a course after the given semester
-// A student can take a course if:
-  // They have not already taken the course
-  // They have taken all prereqs for the course
-  //will probably use preReqsMet
-pred canTake[semester: Semester, course: Course] {
-  no course.prerequisites or preReqsMet[semester, course]
-  course.requires_intro = True => introseq_satisfied[semester]
-  course not in semester.courses_taken
-}
-
-//Michael
-// Take an appropriate transition from one semester to the next
 pred delta[s1, s2: Semester] {
     -- GUARD
     
@@ -162,9 +135,8 @@ pred delta[s1, s2: Semester] {
     -- Update courses taken
     s2.courses_taken = s1.taking + s1.courses_taken
 
-    -- Verify that all new courses can be taken
-    all new_course: s2.taking | {
-      canTake[s2, new_course]
+    all new_course: s2.courses_taken - s1.courses_taken | {
+        can_take[s1, new_course]
     }
 }
 
@@ -188,4 +160,4 @@ pred gradreq_satisfied[s: Semester] {
     GraduationReqs.requirements in (s.courses_taken + s.taking)
 }
 
-run {traces} for 4 Semester for {next is linear}
+run {traces} for exactly 8 Semester, 20 Course for {next is linear}
