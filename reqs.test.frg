@@ -1,6 +1,7 @@
 #lang forge
 
-open "reqs.frg"
+// open "reqs.frg"
+open "req_proto.frg"
 //// Do not edit anything above this line ////
 
 ------------------------------------------------------------------------
@@ -51,7 +52,6 @@ test suite for wellformed_prereqs {
       `e3.eq_courses = `c3
 
       prerequisites = `c2 -> `e1 + `c1 -> `e3 + `c3 -> `e2
-
   }
 }
 
@@ -91,6 +91,23 @@ test suite for prerequisites_met {
     }
 }
 
+test suite for canTake {
+  test expect {
+      //If the course has no prerequisites, then preReqsMet is vacuously true
+      noprerequisites2 : { (all c : Course, semester:Semester | no c.prerequisites and canTake[semester, c] )} is sat
+      //If prerequisites and courses taken are the same then the prerequisites must be met
+      allprerequisitesTaken2 : { (all c : Course, semester:Semester | (c.prerequisites = semester.courses_taken) and canTake[semester, c] )} is sat
+      //If there is at least one course and none of its prerequisites have been taken, then the prerequisites have not been met
+      noPrereqMet2 : { (#{course:Course | not no course} > 1) and (all c : Course, semester:Semester | nopreReqsMet[c, semester] and canTake[semester, c] )} is unsat
+      //All prerequisites must be met for preReqsMet to be true
+      onePrereqNotMet2 : { (some disj c1, c2 : Course, semester:Semester |  
+                              c2 in c1.prerequisites and 
+                              c2 not in semester.courses_taken and 
+                              canTake[semester, c1] )} is unsat
+      takenCourse :  { (some c : Course, semester:Semester | c in semester.courses_taken and canTake[semester, c] )} is unsat
+    }
+}
+
 // test suite for can_take {
 //   test expect {
 //       //If the course has no prerequisites, then prerequisites_met is vacuously true
@@ -107,3 +124,32 @@ test suite for prerequisites_met {
 //       takenCourse :  { (some c : Course, semester:Semester | c in semester.courses_taken and can_take[semester, c] )} is unsat
 //     }
 // }
+
+/* TESTS ADDED ON 5/8 */
+test suite for traces {
+  test expect {
+    -- There never exists a trace such that someone takes more than 5 courses in a semester.
+    noSemestersOver5Courses: {
+      traces implies {
+        no s: Semester | #{s.taking} > 5
+      }
+    } is theorem
+
+    -- There exists a trace such that the graduation requirements are met.
+    graduationRequirementsCanBeMet: {
+      traces
+      some s: Semester | gradreq_satisfied[s]
+    } is sat
+
+    -- There never exists a trace where the same course is being taken in different semesters.
+    tookSameCourseInDifferentSemesters: {
+      traces
+      some c: Course | {
+        some disj s1, s2: Semester | {
+          c in s1.taking
+          c in s2.taking
+        }
+      }
+    } is unsat
+  }
+}
