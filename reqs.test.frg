@@ -1,10 +1,6 @@
 #lang forge
 
-// open "reqs.frg"
-open "req_proto.frg"
-//// Do not edit anything above this line ////
-
-------------------------------------------------------------------------
+open "reqs.frg"
 
 pred someIntroCourse {
   not (
