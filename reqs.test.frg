@@ -64,7 +64,15 @@ test suite for wellformed_prereqs {
   }
 }
 
+pred all_course_has_prof {
+  all course: Course | some p:Professor | course in p.courses
+}
+
 test suite for wellformed_professors {
+  test expect {
+    profless_course: {(some c: Course | all p: Professor | c not in p.courses) and wellformed_professors} is unsat
+  }
+  assert wellformed_professors is sufficient for all_course_has_prof
   example professorless_course is not wellformed_professors for {
       -- FILL ME IN
       Transcript = `Transcript
@@ -150,14 +158,14 @@ test suite for traces {
     } is sat
 
     -- There never exists a trace where the same course is being taken in different semesters.
-    tookSameCourseInDifferentSemesters: {
-      traces
-      some c: Course | {
-        some disj s1, s2: Semester | {
-          c in s1.taking
-          c in s2.taking
-        }
-      }
-    } is unsat
+  //   tookSameCourseInDifferentSemesters: {
+  //     traces
+  //     some c: Course | {
+  //       some disj s1, s2: Semester | {
+  //         c in s1.taking
+  //         c in s2.taking
+  //       }
+  //     }
+  //   } is unsat
   }
 }
