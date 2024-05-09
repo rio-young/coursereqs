@@ -10,7 +10,8 @@ As we move from semester to semester, we make sure that the courses we have take
 
 # # Stakeholders:
 
-This model is primarily intended for students, though some other stakeholders could include Brown administration and faculty.
+This model is primarily intended for students, though some other stakeholders could include Brown administration and faculty. Students could potentially use it to check whether they would be able to take certain courses and still meet graduation requirements, check if they can graduate within a certain timeframe, or see different way in which they can meet graduation requirements. Brown administration could use the model when changing graduation requirements to monitor if the change is still completable by students and how much leeway a new change might afford students in terms of choice of courses. Brown faculty could use the model if they want to change one of their courses' prerequisites (whether removing or adding) to see if there are any circular requirements.
 
-Who is model intended for
-What did and didn't work out
+# # Process
+
+Due to the "bucket" nature of prerequisite courses, we were initially unsure of the best way to implement this. We first thought that the number of cases were there would be multiple kinds of prereqs would be few and far between, so we implemented prerequisistes to simply be a set of courses. However, after creating optimizer instances, we found that many courses had multiple prereq options, so we pivoted to our EquivalentCourse design.
