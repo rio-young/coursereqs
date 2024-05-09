@@ -8,7 +8,6 @@ sig EquivalentCourse {
     eq_courses: set Course
 }
 sig Course {
-    requires_intro: one Boolean,
     prerequisites: set EquivalentCourse
 }
 
@@ -34,7 +33,6 @@ pred wellformed_equivalent_courses {
     }
 }
 pred wellformed_prereqs {
-    // no c: Course | reachable[c, c, prerequisites, eq_courses]
     all c: Course | {
       no c.prerequisites or
       (some c2: Course| {
@@ -43,6 +41,11 @@ pred wellformed_prereqs {
       })
     }
     some c: Course | no c.prerequisites
+}
+
+-- CS1570-CS1010 fails this
+pred wellformed_prereqs_with_no_cycles {
+    no c: Course | reachable[c, c, prerequisites, eq_courses]
 }
 
 pred wellformed_gradreqs {
@@ -81,7 +84,6 @@ pred prerequisites_met[semester: Semester, course: Course] {
  */
 pred can_take[semester: Semester, course: Course] {
     prerequisites_met[semester, course]
-    // course.requires_intro = True => introseq_satisfied[semester]
 }
 
 pred delta[s1, s2: Semester] {
@@ -91,12 +93,9 @@ pred delta[s1, s2: Semester] {
     -- Courses taken changes; NOT NECESSARILY, could take no CS courses in a semester (e.g. study abroad)
     s1.courses_taken != s2.courses_taken
 
-    -- All the courses taken in s1 are stored in s2
+
     s1.courses_taken in s2.courses_taken
-    s1.taking in s2.courses_taken
-    
-    -- Update courses taken
-    s2.courses_taken = s1.taking + s1.courses_taken
+    s1.taking = s2.courses_taken - s1.courses_taken
 
     all new_course: s2.courses_taken - s1.courses_taken | {
         can_take[s1, new_course]
@@ -116,7 +115,7 @@ pred traces {
     some s: Semester | no s.next and gradreq_satisfied[s]
 
     -- No more than 5 courses can be taken in a single semester
-    all s: Semester | {#s.taking <= 5}
+    all s: Semester | #{s.taking} <= 5
 }
 
 pred gradreq_satisfied[s: Semester] {
@@ -253,4 +252,8 @@ test expect {
   } for grad_reqs2 is sat
 }
 
-// run {traces} for exactly 8 Semester, 20 Course for {next is linear}
+run {traces} for exactly 8 Semester for {
+    #Int = 6
+    allcourses
+    next is linear
+}
