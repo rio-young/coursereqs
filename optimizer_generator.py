@@ -33,6 +33,7 @@ EquivalentCourses = list[str]
 """Same as above, except without courses that are not offered"""
 OfferedEquivalentCourses = frozenset[str]
 
+
 def filter_prereq_sets(
     prereq_sets: list[EquivalentCourses], offered_courses: set[str]
 ) -> list[OfferedEquivalentCourses]:
@@ -88,13 +89,23 @@ def make_equivalent_courses_index(
 
     return equivalent_course_index
 
-with open("courses.yaml", "r") as file:
-    filtered_dict = filter_course_prereq_dict(yaml.load(file, MyLoader))
+def merge_courses(partitioned_courses):
+    all_courses = {}
+    for courses in partitioned_courses.values():
+        all_courses |= courses
+    return all_courses
 
-content = ["--This file was generated automatically"]
+with open("courses.yaml", "r") as file:
+    filecontents = yaml.load(file, MyLoader)
+
+filtered_dict = filter_course_prereq_dict(merge_courses(filecontents))
 course_codes = filtered_dict.keys()
-content.append(f"--Number of Courses: {len(course_codes)}")
-content.append("Course = " + ", ".join(course_codes))
+content = [
+    "--This file was generated automatically",
+    f"--Number of Courses: {len(course_codes)}",
+    "Season = `Fall + `Spring"
+    "Course = " + ", ".join(course_codes),
+]
 
 equivalent_courses_index = make_equivalent_courses_index(filtered_dict.values())
 for equivalent_courses, id in equivalent_courses_index.items():
@@ -110,6 +121,21 @@ for course, prereq_sets in filtered_dict.items():
         content.append(
             f"{course}.prerequisites = " + " + ".join(equivalent_course_ids)
         )
+
+for season, courses in filecontents.items():
+    if "both" in season:
+        for course_id in courses:
+            content.append(f"{course_id}.available_semesters = `Fall + `Spring")
+    elif "fall" in season:
+        for course_id in courses:
+            content.append(f"{course_id}.available_semesters = `Fall")
+    elif "spring":
+        for course_id in courses:
+            content.append(f"{course_id}.available_semesters = `Spring")
+    else:
+        raise f"Unknown season {season}"
+
+
 
 with open("output.frg", "w") as file:
     file.writelines(map(lambda line: line + "\n", content))

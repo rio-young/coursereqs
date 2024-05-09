@@ -1,5 +1,9 @@
 #lang forge
 
+abstract sig Season {}
+one sig Fall extends Season {}
+one sig Spring extends Season {}
+
 /*
  * Course requirements are in conjuntive normal form:
  * (330 OR 300) AND (LINALG)
@@ -8,7 +12,8 @@ sig EquivalentCourse {
     eq_courses: set Course
 }
 sig Course {
-    prerequisites: set EquivalentCourse
+    prerequisites: set EquivalentCourse,
+    available_semesters: set Semester
 }
 
 // State Tracking
@@ -23,7 +28,8 @@ one sig GraduationReqs {
 sig Semester {
     taking: set Course,
     courses_taken: set Course,
-    next: lone Semester
+    next: lone Semester,
+    season: one Season
 }
 
 pred wellformed_equivalent_courses {
@@ -49,6 +55,11 @@ pred wellformed_prereqs_with_no_cycles {
     some c: Course | no c.prerequisites
 }
 
+pred wellformed_courses {
+    all c: Course | some c.c
+    wellformed_prereqs
+}
+
 pred wellformed_gradreqs {
     some GraduationReqs.requirements
 }
@@ -60,12 +71,13 @@ pred wellformed_transcript {
 pred wellformed {
     wellformed_equivalent_courses
     wellformed_gradreqs
-    wellformed_prereqs
+    wellformed_courses
     wellformed_transcript
 }
 
 pred init {
     no Transcript.first.courses_taken
+    Transcript.first.season = Fall
 }
 
 /* Rio
@@ -85,22 +97,24 @@ pred prerequisites_met[semester: Semester, course: Course] {
  */
 pred can_take[semester: Semester, course: Course] {
     prerequisites_met[semester, course]
+    semester.season in course.available_semesters
 }
 
 pred delta[s1, s2: Semester] {
     -- GUARD
     
     -- ACTION
-    -- Courses taken changes; NOT NECESSARILY, could take no CS courses in a semester (e.g. study abroad)
-    s1.courses_taken != s2.courses_taken
-
+    -- Courses taken changes?
+    -- NOT NECESSARILY, could take no CS courses in a semester (e.g. study abroad)
+    // s1.courses_taken != s2.courses_taken
 
     s1.courses_taken in s2.courses_taken
     s1.taking = s2.courses_taken - s1.courses_taken
-
-    all new_course: s2.courses_taken - s1.courses_taken | {
+    all new_course: s1.taking | {
         can_take[s1, new_course]
     }
+
+    s1.season != s2.season
 }
 
 pred traces {
@@ -255,6 +269,6 @@ test expect {
 
 run {traces} for exactly 8 Semester for {
     #Int = 6
-    allcourses
+    // allcourses
     next is linear
 }
