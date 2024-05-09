@@ -14,14 +14,14 @@ const stage = new Stage();
 const scheduleGrid = new Grid({
   grid_location: { x: 20, y: 20 },
   cell_size: { x_size: 200, y_size: 50 },
-  grid_dimensions: { x_size: numSems - 1, y_size: 6 },
+  grid_dimensions: { x_size: numSems, y_size: 6 },
 });
 
 // Add the name of each semester into the grid
 for (let s = 0; s < numSems; s++) {
-  if (Semester.atom("Semester" + (s + 1)) != null) {
+  if (Semester.atom("Semester" + s) != null) {
     const semesterTbox = new TextBox({
-      text: Semester.atom("Semester" + (s + 1)).id(),
+      text: Semester.atom("Semester" + s).id(),
       coords: { x: 0, y: 0 },
       color: "black",
       fontsize: 16,
@@ -32,8 +32,8 @@ for (let s = 0; s < numSems; s++) {
 
 // Add the courses for each semester into the grid
 for (let s = 0; s < numSems; s++) {
-  if (Semester.atom("Semester" + (s + 1)) != null) {
-    const courseList = listCourses(Semester.atom("Semester" + (s + 1)));
+  if (Semester.atom("Semester" + s) != null) {
+    const courseList = listCourses(Semester.atom("Semester" + s));
     if (courseList.length > 5) {
       const errorTbox = new TextBox({
         text: `Taking ${courseList.length} courses`,
@@ -45,7 +45,7 @@ for (let s = 0; s < numSems; s++) {
     } else {
       for (let r = 1; r < 6; r++) {
         const courseTbox = new TextBox({
-          text: courseList[r],
+          text: courseList[r - 1],
           coords: { x: 0, y: 0 },
           color: "black",
           fontsize: 12,
@@ -58,7 +58,7 @@ for (let s = 0; s < numSems; s++) {
 
 function listCourses(semesterAtom) {
   const courses = semesterAtom
-    .join(courses_taken)
+    .join(taking)
     .tuples()
     .map((tuple) => {
       return tuple.atoms();
