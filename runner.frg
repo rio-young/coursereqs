@@ -226,16 +226,138 @@ inst grad_reqs2 {
                             `CS1950U + `CS1570 + `CS1440
 }
 
-// test expect {
-//   grad1: {
-//     traces
-//     some s: Semester | gradreq_satisfied[s]
-//   } for grad_reqs1 is sat
-//   grad2: {
-//     traces
-//     some s: Semester | gradreq_satisfied[s]
-//   } for grad_reqs2 is sat
-// }
+inst grad_reqs4 {
+    //add some gradreqs here
+    allcourses
+    GraduationReqs = `gradreqs
+
+    `gradreqs.requirements = `CS0150 + `CS0200 + //series a
+                            //Design pathway
+                            `CS1230 + `CS1300 + 
+                            //Intermediate Classes
+                            `CS0220 + `CS1450 + `CS300 +
+                            //3 1000-2000 level classes
+                            `CS1380 + `CS1710 + `CS1730
+}
+
+inst grad_reqs5 {
+    //add some gradreqs here
+    allcourses
+    GraduationReqs = `gradreqs
+
+    `gradreqs.requirements = `CS0150 + `CS0200 + //series a
+                            //SECURITY pathway
+                            `CS1510 + `CS1515 + `CS1650 + `CS1660 +
+                            //Intermediate Classes
+                            `CS0220 + `CS0300 + 
+                            //3 1000-2000 level classes
+                            `CS1380 + `CS1710 + `CS1730
+} 
+
+inst grad_reqs6 {
+  GraduationReqs = `gradreqs
+  `gradreqs.requirements = `CS0190 + `CS0200 + // intro
+                          `CS1420 + `CS1430 + // core
+                          `CS0220 + `CS0410 + `CS0330 + // intermed, but we don't have MATH or APMA so we substituted those
+                          `CS1010 + `CS1470
+}
+
+inst grad_reqs7 {
+  GraduationReqs = `gradreqs
+  `gradreqs.requirements = `CS0190 + `CS0200 + // intro
+                          `CS1810 + `CS1420 + // core + related
+                          `CS0220 + `CS0410 + CS1010 + // intermed, but we don't have MATH or APMA so we substituted probability & stats with Foundations of AI
+                          `CS0330 + `CS1680
+}
+
+inst grad_reqs_8 {
+  //add some gradreqs here
+  allcourses
+  GraduationReqs = `gradreqs
+
+  `gradreqs.requirements = `CS0170 + `CS0200 + //series b
+                           //Visual Computing pathway
+                           `CS1230 + `CS1470 + 
+                           //Intermediate Classes
+                           `CS0330 + `CS0320 + `CS0300 + 
+                           //3 1000-2000 level classes
+                           `CS1950U + `CS1570 + `CS1440
+
+}
+
+inst grad_reqs_9 {
+  //add some gradreqs here
+  allcourses
+  GraduationReqs = `gradreqs
+
+  `gradreqs.requirements = `CS0170 + `CS0200 + //series b
+                           //THEORY pathway
+                           `CS1510 + `CS1440 + 
+                           //Intermediate Classes
+                           `CS1010 + `CS0320 + `CS0300 + 
+                           //3 1000-2000 level classes
+                           `CS1950U + `CS1570 + `CS1440
+
+}
+
+inst grad_reqs_10 {
+  //add some gradreqs here
+  allcourses
+  GraduationReqs = `gradreqs
+
+  `gradreqs.requirements = `CS0170 + `CS0200 + //series b
+                           //SYSTEMS pathway
+                           `CS1380 + `CS1260 + 
+                           //Intermediate Classes
+                           `CS0220 + `CS0320 + `CS0300 + 
+                           //3 1000-2000 level classes
+                           `CS1950U + `CS1570 + `CS1440
+
+}
+
+
+test expect {
+  grad1: {
+    traces
+    some s: Semester | gradreq_satisfied[s]
+  } for grad_reqs1 is sat
+  grad2: {
+    traces
+    some s: Semester | gradreq_satisfied[s]
+  } for grad_reqs2 is sat
+  grad3: {
+    traces
+    some s: Semester | gradreq_satisfied[s]
+  } for grad_reqs3 is sat
+  grad4: {
+    traces
+    some s: Semester | gradreq_satisfied[s]
+  } for grad_reqs4 is sat
+  grad5: {
+    traces
+    some s: Semester | gradreq_satisfied[s]
+  } for grad_reqs5 is sat
+  grad6: {
+    traces
+    some s: Semester | gradreq_satisfied[s]
+  } for grad_reqs6 is sat
+  grad7: {
+    traces
+    some s: Semester | gradreq_satisfied[s]
+  } for grad_reqs7 is sat
+  grad8: {
+    traces
+    some s: Semester | gradreq_satisfied[s]
+  } for grad_reqs8 is sat
+  grad9: {
+    traces
+    some s: Semester | gradreq_satisfied[s]
+  } for grad_reqs9 is sat
+  grad10: {
+    traces
+    some s: Semester | gradreq_satisfied[s]
+  } for grad_reqs10 is sat
+}
 
 -- Validate instance. Sometimes, our instance is the issue, not the model
 test expect {
