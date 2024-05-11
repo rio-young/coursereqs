@@ -1,5 +1,5 @@
 import yaml
-
+import sys
 
 class MyLoader(yaml.SafeLoader):
     """Applies custom logic for parsing input YAML file"""
@@ -95,47 +95,51 @@ def merge_courses(partitioned_courses):
         all_courses |= courses
     return all_courses
 
-with open("courses.yaml", "r") as file:
-    filecontents = yaml.load(file, MyLoader)
+def main(filename):
+    with open(filename, "r") as file:
+        filecontents = yaml.load(file, MyLoader)
 
-filtered_dict = filter_course_prereq_dict(merge_courses(filecontents))
-course_codes = filtered_dict.keys()
-content = [
-    "--This file was generated automatically",
-    f"--Number of Courses: {len(course_codes)}",
-    "Season = `Fall + `Spring"
-    "Course = " + ", ".join(course_codes),
-]
-
-equivalent_courses_index = make_equivalent_courses_index(filtered_dict.values())
-for equivalent_courses, id in equivalent_courses_index.items():
-    content.append(f"`EquivalentCourse{id} = " + ", ".join(equivalent_courses))
-
-for course, prereq_sets in filtered_dict.items():
-    equivalent_course_ids = [
-        f"`EquivalentCourse{equivalent_courses_index[prereq_set]}"
-        for prereq_set in prereq_sets
-        if prereq_set
+    filtered_dict = filter_course_prereq_dict(merge_courses(filecontents))
+    course_codes = filtered_dict.keys()
+    content = [
+        "--This file was generated automatically",
+        f"--Number of Courses: {len(course_codes)}",
+        "Season = `Fall + `Spring"
+        "Course = " + ", ".join(course_codes),
     ]
-    if equivalent_course_ids:
-        content.append(
-            f"{course}.prerequisites = " + " + ".join(equivalent_course_ids)
-        )
 
-for season, courses in filecontents.items():
-    if "both" in season:
-        for course_id in courses:
-            content.append(f"{course_id}.available_semesters = `Fall + `Spring")
-    elif "fall" in season:
-        for course_id in courses:
-            content.append(f"{course_id}.available_semesters = `Fall")
-    elif "spring":
-        for course_id in courses:
-            content.append(f"{course_id}.available_semesters = `Spring")
-    else:
-        raise f"Unknown season {season}"
+    equivalent_courses_index = make_equivalent_courses_index(filtered_dict.values())
+    for equivalent_courses, id in equivalent_courses_index.items():
+        content.append(f"`EquivalentCourse{id} = " + ", ".join(equivalent_courses))
+
+    for course, prereq_sets in filtered_dict.items():
+        equivalent_course_ids = [
+            f"`EquivalentCourse{equivalent_courses_index[prereq_set]}"
+            for prereq_set in prereq_sets
+            if prereq_set
+        ]
+        if equivalent_course_ids:
+            content.append(
+                f"{course}.prerequisites = " + " + ".join(equivalent_course_ids)
+            )
+
+    for season, courses in filecontents.items():
+        if "both" in season:
+            for course_id in courses:
+                content.append(f"{course_id}.available_semesters = `Fall + `Spring")
+        elif "fall" in season:
+            for course_id in courses:
+                content.append(f"{course_id}.available_semesters = `Fall")
+        elif "spring":
+            for course_id in courses:
+                content.append(f"{course_id}.available_semesters = `Spring")
+        else:
+            raise f"Unknown season {season}"
 
 
 
-with open("output.frg", "w") as file:
-    file.writelines(map(lambda line: line + "\n", content))
+    with open("output.frg", "w") as file:
+        file.writelines(map(lambda line: line + "\n", content))
+
+if __name__ == "__main__":
+    main(sys.argv[1])
