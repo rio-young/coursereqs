@@ -226,6 +226,21 @@ inst grad_reqs2 {
                             `CS1950U + `CS1570 + `CS1440
 }
 
+inst grad_reqs3 {
+    //add some gradreqs here
+    allcourses
+    GraduationReqs = `gradreqs
+
+    `gradreqs.requirements = `CS0150 + `CS0200 + //series a
+                            //SECURITY pathway
+                            `CS1510 + `CS1515 + `CS1650 + `CS1660 + 
+                            //Intermediate Classes
+                            `CS0220 + `CS0300 + 
+                            //3 1000-2000 level classes
+                            `CS1380 + `CS1710 + `CS1730
+} 
+
+
 inst grad_reqs4 {
     //add some gradreqs here
     allcourses
@@ -235,7 +250,7 @@ inst grad_reqs4 {
                             //Design pathway
                             `CS1230 + `CS1300 + 
                             //Intermediate Classes
-                            `CS0220 + `CS1450 + `CS300 +
+                            `CS0220 + `CS1450 + `CS0300 +
                             //3 1000-2000 level classes
                             `CS1380 + `CS1710 + `CS1730
 }
@@ -255,6 +270,7 @@ inst grad_reqs5 {
 } 
 
 inst grad_reqs6 {
+  allcourses
   GraduationReqs = `gradreqs
   `gradreqs.requirements = `CS0190 + `CS0200 + // intro
                           `CS1420 + `CS1430 + // core
@@ -263,14 +279,15 @@ inst grad_reqs6 {
 }
 
 inst grad_reqs7 {
+  allcourses
   GraduationReqs = `gradreqs
   `gradreqs.requirements = `CS0190 + `CS0200 + // intro
                           `CS1810 + `CS1420 + // core + related
-                          `CS0220 + `CS0410 + CS1010 + // intermed, but we don't have MATH or APMA so we substituted probability & stats with Foundations of AI
+                          `CS0220 + `CS0410 + `CS1010 + // intermed, but we don't have MATH or APMA so we substituted probability & stats with Foundations of AI
                           `CS0330 + `CS1680
 }
 
-inst grad_reqs_8 {
+inst grad_reqs8 {
   //add some gradreqs here
   allcourses
   GraduationReqs = `gradreqs
@@ -285,7 +302,7 @@ inst grad_reqs_8 {
 
 }
 
-inst grad_reqs_9 {
+inst grad_reqs9 {
   //add some gradreqs here
   allcourses
   GraduationReqs = `gradreqs
@@ -300,7 +317,7 @@ inst grad_reqs_9 {
 
 }
 
-inst grad_reqs_10 {
+inst grad_reqs10 {
   //add some gradreqs here
   allcourses
   GraduationReqs = `gradreqs
