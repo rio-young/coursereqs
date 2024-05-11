@@ -1,6 +1,6 @@
 #lang forge
 
-open "reqs_target.frg"
+open "reqs_light.frg"
 //// Do not edit anything above this line ////
 
 ------------------------------------------------------------------------
@@ -63,29 +63,6 @@ test suite for wellformed_prereqs {
   }
 }
 
-pred all_course_has_prof {
-  all course: Course | some p:Professor | course in p.courses
-}
-
-test suite for wellformed_professors {
-  test expect {
-    profless_course: {(some c: Course | all p: Professor | c not in p.courses) and wellformed_professors} is unsat
-  }
-  assert wellformed_professors is sufficient for all_course_has_prof
-  example professorless_course is not wellformed_professors for {
-      -- FILL ME IN
-      Transcript = `Transcript
-      Course = `c1 
-  }
-  example professor_course is wellformed_professors for {
-      -- FILL ME IN
-      Transcript = `Transcript
-      Course = `c1 
-      Professor = `p1
-      `p1.courses = `c1
-  }
-}
-
 pred noprerequisites_met[course: Course, semester:Semester] {
   all c: Course | {
     not no c.prerequisites
@@ -136,10 +113,6 @@ test suite for can_take {
                               not oneEquivSatisfied[c2, semester] and 
                               prerequisites_met[semester, c1] )} is unsat
       takenCourse :  { (some c : Course, semester:Semester | c in semester.courses_taken and can_take[semester, c] )} is unsat
-      all_prof_sabbatical : {
-        #Course > 0
-        wellformed_professors and 
-        (all p: Professor | all c : Course, semester:Semester | p.on_sabbatical = True and can_take[semester, c])} is unsat
     }
 }
 

@@ -1,8 +1,5 @@
 #lang forge
 
-abstract sig Season {}
-one sig Fall, Spring extends Season {}
-
 abstract sig Boolean {}
 one sig True, False extends Boolean {}
 
@@ -14,13 +11,7 @@ sig EquivalentCourse {
     eq_courses: set Course
 }
 sig Course {
-    prerequisites: set EquivalentCourse,
-    available_semesters: set Season
-}
-
-sig Professor {
-  courses: set Course,
-  on_sabbatical: one Boolean
+    prerequisites: set EquivalentCourse
 }
 
 // State Tracking
@@ -35,8 +26,7 @@ one sig GraduationReqs {
 sig Semester {
     taking: set Course,
     courses_taken: set Course,
-    next: lone Semester,
-    season: one Season
+    next: lone Semester
 }
 
 pred wellformed_equivalent_courses {
@@ -63,7 +53,6 @@ pred wellformed_prereqs_with_no_cycles {
 }
 
 pred wellformed_courses {
-    all c: Course | some c.available_semesters
     wellformed_prereqs
 }
 
@@ -75,12 +64,7 @@ pred wellformed_transcript {
     Transcript.first = Semester - Semester.next
 }
 
-pred wellformed_professors{
-  all course: Course | some p: Professor | course in p.courses
-}
-
 pred wellformed {
-    wellformed_professors
     wellformed_equivalent_courses
     wellformed_gradreqs
     wellformed_courses
@@ -89,7 +73,6 @@ pred wellformed {
 
 pred init {
     no Transcript.first.courses_taken
-    Transcript.first.season = Fall
 }
 
 /* Rio
@@ -109,10 +92,6 @@ pred prerequisites_met[semester: Semester, course: Course] {
  */
 pred can_take[semester: Semester, course: Course] {
     prerequisites_met[semester, course]
-    semester.season in course.available_semesters
-    some p: Professor | {
-      course in p.courses and p.on_sabbatical = False
-    }
     course not in semester.courses_taken
 }
 
@@ -126,11 +105,11 @@ pred delta[s1, s2: Semester] {
 
     s1.courses_taken in s2.courses_taken
     s1.taking = s2.courses_taken - s1.courses_taken
+    
+    -- If this is s1.taking, there is a bug where the last semester's classes aren't verified.
     all new_course: s2.taking | {
         can_take[s2, new_course]
     }
-
-    s1.season != s2.season
 }
 
 pred traces {
@@ -154,9 +133,14 @@ pred gradreq_satisfied[s: Semester] {
 }
 
 inst allcourses {
+  
+  -- Booleans
+
   Boolean = `True + `False
   True = `True
   False = `False
+
+  -- Courses
 
   Course = `CS0111 + `CS0500 + `CS1040 + `CS1300 + `CS1380 + `CS1430 + `CS1411 + 
           `CS1440 + `CS1470 + `CS0112 + `CS0150 + `CS0170 + `CS0410 + `CS1230 +
@@ -171,55 +155,14 @@ inst allcourses {
            `CS1952Y + `CS1952Z + `CS1510  + `CS1010 + `CS1680 + `CS1730 + 
           `CS1600 + `CS1650 + `CS1953A + `CS1952X
 
+  -- Equivalent courses
+
   EquivalentCourse = `EquivalentCourse1 + `EquivalentCourse2 + `EquivalentCourse3 + `EquivalentCourse4 +
                     `EquivalentCourse5 + `EquivalentCourse6 + `EquivalentCourse7 + `EquivalentCourse8 +
                     `EquivalentCourse9 + `EquivalentCourse10 + `EquivalentCourse11 + `EquivalentCourse12 +
                     `EquivalentCourse13 + `EquivalentCourse14 + `EquivalentCourse15 + `EquivalentCourse16 +
                     `EquivalentCourse17 + `EquivalentCourse18 + `EquivalentCourse19 + `EquivalentCourse20 +
                     `EquivalentCourse21 + `EquivalentCourse22 + `EquivalentCourse0
-  Professor = `MildaZizyte + `PhilipKlein + `AnnaLysyanskaya + `VanessaCho + `NikosVasilakis + `SrinathSridhar + 
-              `AmyGreenwald + `RitambharaSingh + `TimNelson + `AndriesvanDam + `DanielRitchie + `RobertLewis +
-              `UgurCetintemel + `ErnestoZaldivar + `ElliePavlick + `LorenzoDeStefani + `PeihanMiao + `NicholasDeMarinis +
-              `EliUpfal + `ShriramKrishnamurthi + `ThomasWDoeppner + `ErnestoZaldivar + `DeborahHurley + 
-              `SorinIstrail + `BernardoPalazzi + `MauriceHerlihy + `SureshVenkatasubramanian + `StephenBach +
-              `PedroFelzenszwalb + `JuliaNetter + `YuCheng + `NoraAyanian + `VasileiosKemerlis + `TimothyHEdgar + 
-              `JamesHTompkin + `BarbaraMeier + `DianaFreed
-  
-  `MildaZizyte.courses = `CS0111 + `CS1952Y + `CS1600
-  `PhilipKlein.courses = `CS0500 + `CS0170
-  `AnnaLysyanskaya.courses = `CS1040
-  `VanessaCho.courses = `CS1300
-  `NikosVasilakis.courses = `CS1380
-  `SrinathSridhar.courses = `CS1430
-  `AmyGreenwald.courses = `CS1411 + `CS0410 + `CS1440
-  `RitambharaSingh.courses = `CS1470
-  `TimNelson.courses = `CS0112 + `CS0320 + `CS1340 + `CS1710
-  `AndriesvanDam.courses = `CS0150
-  `DanielRitchie.courses = `CS1230 + `CS1950U
-  `RobertLewis.courses = `CS1260 + `CS1951X + `CS0220
-  `UgurCetintemel.courses = `CS1270
-  `ErnestoZaldivar.courses = `CS1360 + `CS1800
-  `ElliePavlick.courses = `CS1460
-  `LorenzoDeStefani.courses = `CS1570 + `CS1010 + `CS1951A
-  `PeihanMiao.courses = `CS1510 + `CS1515
-  `NicholasDeMarinis.courses = `CS0200 + `CS0330 + `CS1330 + `CS0300 + `CS1680 + `CS1310 + `CS1660 + `CS1620
-  `EliUpfal.courses = `CS1550 + `CS1450
-  `ShriramKrishnamurthi.courses = `CS0190 + `CS1730
-  `ThomasWDoeppner.courses = `CS1670 + `CS0330 
-  `DeborahHurley.courses = `CS1870
-  `SorinIstrail.courses = `CS1810 + `CS1820
-  `BernardoPalazzi.courses = `CS1660 + `CS1880
-  `MauriceHerlihy.courses = `CS1760 + `CS1951L
-  `SureshVenkatasubramanian.courses = `CS1951Z
-  `StephenBach.courses = `CS1420
-  `JuliaNetter.courses = `CS1952B
-  `YuCheng.courses = `CS1952Q
-  `NoraAyanian.courses = `CS1952Z
-  `VasileiosKemerlis.courses = `CS1650
-  `TimothyHEdgar.courses = `CS1805 + `CS1952X
-  `JamesHTompkin.courses = `CS1950N
-  `BarbaraMeier.courses = `CS1250
-  `DianaFreed.courses = `CS1953A
 
   `EquivalentCourse0.eq_courses = `CS0111
   `EquivalentCourse1.eq_courses = `CS0190 + `CS0111 + `CS0112 + `CS0170 + `CS0150
@@ -287,74 +230,6 @@ inst allcourses {
   `CS1951Z.prerequisites = `EquivalentCourse22
   `CS1952Q.prerequisites = `EquivalentCourse2
   `CS1952Y.prerequisites = `EquivalentCourse15
-
-  -- Seasons
-  Season = `Fall + `Spring
-  Fall = `Fall
-  Spring = `Spring
-
-  `CS0111.available_semesters = `Fall + `Spring
-  `CS0320.available_semesters = `Fall + `Spring
-  `CS1340.available_semesters = `Fall + `Spring
-  `CS1430.available_semesters = `Fall + `Spring
-  `CS0200.available_semesters = `Fall + `Spring
-  `CS0220.available_semesters = `Spring
-  `CS0300.available_semesters = `Spring
-  `CS0500.available_semesters = `Spring
-  `CS1040.available_semesters = `Spring
-  `CS1300.available_semesters = `Spring
-  `CS1310.available_semesters = `Spring
-  `CS1380.available_semesters = `Spring
-  `CS1420.available_semesters = `Spring
-  `CS1460.available_semesters = `Spring
-  `CS1440.available_semesters = `Spring
-  `CS1470.available_semesters = `Spring
-  `CS1515.available_semesters = `Spring
-  `CS1550.available_semesters = `Spring
-//   `CS1620.available_semesters = `Spring // Security Lab
-  `CS1660.available_semesters = `Spring
-  `CS1670.available_semesters = `Spring
-  `CS1710.available_semesters = `Spring
-  `CS1800.available_semesters = `Spring
-  `CS1820.available_semesters = `Spring
-  `CS1880.available_semesters = `Spring
-  `CS1950U.available_semesters = `Spring
-  `CS1951A.available_semesters = `Spring
-  `CS1951L.available_semesters = `Spring
-  `CS1952B.available_semesters = `Spring
-  `CS1952Q.available_semesters = `Spring
-  `CS1952X.available_semesters = `Spring
-  `CS1952Y.available_semesters = `Spring
-  `CS1952Z.available_semesters = `Spring
-  `CS0112.available_semesters = `Fall
-  `CS0150.available_semesters = `Fall
-  `CS0170.available_semesters = `Fall
-  `CS0190.available_semesters = `Fall
-  `CS0330.available_semesters = `Fall
-  `CS0410.available_semesters = `Fall
-  `CS1010.available_semesters = `Fall
-  `CS1230.available_semesters = `Fall
-  `CS1250.available_semesters = `Fall
-  `CS1260.available_semesters = `Fall
-  `CS1270.available_semesters = `Fall
-  `CS1330.available_semesters = `Fall
-  `CS1360.available_semesters = `Fall
-  `CS1411.available_semesters = `Fall
-  `CS1450.available_semesters = `Fall
-  `CS1510.available_semesters = `Fall
-  `CS1570.available_semesters = `Fall
-  `CS1600.available_semesters = `Fall
-  `CS1650.available_semesters = `Fall
-  `CS1680.available_semesters = `Fall
-  `CS1730.available_semesters = `Fall
-  `CS1760.available_semesters = `Fall
-  `CS1805.available_semesters = `Fall
-  `CS1810.available_semesters = `Fall
-  `CS1870.available_semesters = `Fall
-  `CS1950N.available_semesters = `Fall
-  `CS1951X.available_semesters = `Fall
-  `CS1951Z.available_semesters = `Fall
-  `CS1953A.available_semesters = `Fall
 }
 
 inst grad_reqs1 {
